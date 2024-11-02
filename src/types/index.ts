@@ -2,7 +2,6 @@ export interface Joke {
   _id: string;
   content: string;
   type: string;
-  isModerated: boolean;
   isActive: boolean;
   createdAt: Date;
   updatedAt: Date;

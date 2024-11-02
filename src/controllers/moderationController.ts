@@ -127,18 +127,40 @@ export const approveJoke = async (
     const { id } = req.params;
     const { content, type } = req.body;
 
-    const success = await jokeService.approveJoke(parseInt(id), {
-      content,
-      type,
-    });
-    if (!success) {
-      res.status(500).json({ message: "Failed to approve joke" });
+    if (!content || !type) {
+      res.status(400).json({
+        message: "Content and type are required",
+        success: false,
+      });
       return;
     }
 
-    res.json({ message: "Joke approved successfully" });
-  } catch (error) {
-    res.status(500).json({ message: "Internal server error" });
+    console.log("Approving joke:", { id, content, type });
+
+    const success = await jokeService.approveJoke(id, {
+      content,
+      type,
+    });
+
+    if (!success) {
+      res.status(500).json({
+        message: "Failed to approve joke",
+        success: false,
+      });
+      return;
+    }
+
+    res.json({
+      message: "Joke approved successfully",
+      success: true,
+    });
+  } catch (error: any) {
+    console.error("Error in approveJoke controller:", error);
+    res.status(500).json({
+      message: "Internal server error",
+      error: error.message,
+      success: false,
+    });
   }
 };
 
@@ -148,16 +170,46 @@ export const rejectJoke = async (
 ): Promise<void> => {
   try {
     const { id } = req.params;
-    const success = await jokeService.rejectJoke(parseInt(id));
 
-    if (!success) {
-      res.status(500).json({ message: "Failed to reject joke" });
+    if (!id) {
+      res.status(400).json({
+        success: false,
+        message: "Joke ID is required",
+      });
       return;
     }
 
-    res.json({ message: "Joke rejected successfully" });
+    try {
+      const success = await jokeService.rejectJoke(id);
+
+      if (success) {
+        res.json({
+          success: true,
+          message: "Joke rejected successfully",
+        });
+      } else {
+        res.status(500).json({
+          success: false,
+          message: "Failed to reject joke",
+        });
+      }
+    } catch (error) {
+      if (error instanceof Error && error.message === "Joke not found") {
+        res.status(404).json({
+          success: false,
+          message: "Joke not found",
+        });
+      } else {
+        throw error; // Re-throw for general error handling
+      }
+    }
   } catch (error) {
-    res.status(500).json({ message: "Internal server error" });
+    console.error("Error in rejectJoke controller:", error);
+    res.status(500).json({
+      success: false,
+      message: "Internal server error",
+      error: error instanceof Error ? error.message : "Unknown error",
+    });
   }
 };
 

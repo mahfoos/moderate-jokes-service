@@ -25,15 +25,36 @@ export class JokeService {
   }
 
   async approveJoke(
-    jokeId: number,
+    jokeId: string,
     updatedJoke: Partial<Joke>
   ): Promise<boolean> {
     try {
-      // Add to deliver jokes service
-      await axios.post(`${this.deliverJokesUrl}/jokes`, updatedJoke);
+      console.log("Attempting to approve joke:", {
+        jokeId,
+        updatedJoke,
+        deliverUrl: `${this.deliverJokesUrl}/jokes`,
+        submitUrl: `${this.submitJokesUrl}/jokes/${jokeId}`,
+      });
 
-      // Delete from submit jokes service
-      await axios.delete(`${this.submitJokesUrl}/jokes/${jokeId}`);
+      // Step 1: Add to deliver jokes service
+      try {
+        await axios.post(`${this.deliverJokesUrl}/jokes`, updatedJoke);
+        console.log("Successfully added to deliver service");
+      } catch (error) {
+        console.error("Failed to add to deliver service:", error);
+        throw new Error("Failed to add to deliver service");
+      }
+
+      // Step 2: Delete from submit jokes service
+      try {
+        await axios.delete(`${this.submitJokesUrl}/jokes/${jokeId}`);
+        console.log("Successfully deleted from submit service");
+      } catch (error) {
+        console.error("Failed to delete from submit service:", error);
+        // You might want to handle this case specially
+        // as the joke is already in the deliver service
+        throw new Error("Failed to delete from submit service");
+      }
 
       return true;
     } catch (error) {
@@ -42,13 +63,25 @@ export class JokeService {
     }
   }
 
-  async rejectJoke(jokeId: number): Promise<boolean> {
+  async rejectJoke(jokeId: string): Promise<boolean> {
     try {
-      await axios.delete(`${this.submitJokesUrl}/jokes/${jokeId}`);
-      return true;
+      if (!jokeId) {
+        throw new Error("Joke ID is required");
+      }
+
+      const response = await axios.delete(
+        `${this.submitJokesUrl}/jokes/${jokeId}`
+      );
+
+      return response.status === 200 || response.status === 204;
     } catch (error) {
       console.error("Error rejecting joke:", error);
-      return false;
+      if (axios.isAxiosError(error)) {
+        if (error.response?.status === 404) {
+          throw new Error("Joke not found");
+        }
+      }
+      throw error;
     }
   }
 
