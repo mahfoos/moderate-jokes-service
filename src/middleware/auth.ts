@@ -27,7 +27,7 @@ export const authMiddleware = (
     }
 
     const decoded = jwt.verify(token, process.env.JWT_SECRET!) as UserPayload;
-    (req as any).user = decoded; // Type assertion as temporary fix
+    (req as any).user = decoded;
     next();
   } catch (error) {
     res.status(401).json({ message: "Invalid token" });

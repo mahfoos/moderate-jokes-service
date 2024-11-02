@@ -9,6 +9,100 @@ export const validateJokeUpdate: ValidationChain[] = [
   body("type").isString().notEmpty(),
 ];
 
+/**
+ * @swagger
+ * components:
+ *   schemas:
+ *     Joke:
+ *       type: object
+ *       properties:
+ *         id:
+ *           type: integer
+ *         content:
+ *           type: string
+ *         type:
+ *           type: string
+ *         isActive:
+ *           type: boolean
+ *
+ * /jokes/next:
+ *   get:
+ *     summary: Get next unmoderated joke
+ *     tags: [Jokes]
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: Returns the next unmoderated joke
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Joke'
+ *       404:
+ *         description: No jokes available for moderation
+ *
+ * /jokes/{id}/approve:
+ *   post:
+ *     summary: Approve a joke
+ *     tags: [Jokes]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: integer
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - content
+ *               - type
+ *             properties:
+ *               content:
+ *                 type: string
+ *               type:
+ *                 type: string
+ *     responses:
+ *       200:
+ *         description: Joke approved successfully
+ *
+ * /jokes/{id}/reject:
+ *   post:
+ *     summary: Reject a joke
+ *     tags: [Jokes]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: integer
+ *     responses:
+ *       200:
+ *         description: Joke rejected successfully
+ *
+ * /jokes/types:
+ *   get:
+ *     summary: Get all joke types
+ *     tags: [Jokes]
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: Returns array of joke types
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: array
+ *               items:
+ *                 type: string
+ */
 export const getNextJoke = async (
   req: Request,
   res: Response
