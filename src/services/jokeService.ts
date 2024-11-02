@@ -1,5 +1,7 @@
 import axios from "axios";
 import { Joke } from "../types";
+import dotenv from "dotenv";
+dotenv.config();
 
 export class JokeService {
   private deliverJokesUrl: string;
